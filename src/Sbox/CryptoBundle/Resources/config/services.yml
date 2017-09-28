@@ -1,0 +1,4 @@
+services:
+#    sbox_crypto.example:
+#        class: Sbox\CryptoBundle\Example
+#        arguments: ["@service_id", "plain_value", "%parameter%"]

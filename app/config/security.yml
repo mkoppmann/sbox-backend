@@ -1,0 +1,33 @@
+# To get started with security, check out the documentation:
+# http://symfony.com/doc/current/security.html
+security:
+
+    encoders:
+        Sbox\UserBundle\Entity\User:
+            id: sbox_user.argon2_encoder
+            # algorithm: bcrypt
+            # cost:      15
+
+    # http://symfony.com/doc/current/security.html#b-configuring-how-users-are-loaded
+    providers:
+        sbox_users:
+            id: sbox_user.user_provider
+
+    firewalls:
+        # disables authentication for assets and the profiler, adapt it according to your needs
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        api:
+            anonymous: false
+            logout:
+                path: /api/user/logout
+                success_handler: sbox_user.logout_handler
+            provider: sbox_users
+            guard:
+                authenticators:
+                    - sbox_user.user_authenticator
+
+    access_control:
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }

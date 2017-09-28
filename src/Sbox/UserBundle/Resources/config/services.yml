@@ -1,0 +1,19 @@
+services:
+    sbox_user.user_manager:
+        class: Sbox\UserBundle\Manager\UserManager
+        arguments: [ "@doctrine.orm.entity_manager", "@security.encoder_factory" ]
+
+    sbox_user.user_provider:
+        class: Sbox\UserBundle\Security\UserProvider
+        arguments: [ "@sbox_user.user_manager"]
+
+    sbox_user.user_authenticator:
+        class: Sbox\UserBundle\Security\UserAuthenticator
+        arguments: [ "@sbox_user.user_provider", "@security.encoder_factory" ]
+        autowire: true
+
+    sbox_user.logout_handler:
+        class: Sbox\UserBundle\Security\LogoutHandler
+
+    sbox_user.argon2_encoder:
+        class: Sbox\UserBundle\Security\Argon2Encoder

@@ -1,0 +1,18 @@
+sbox_api:
+    resource: "@SboxApiBundle/Controller/"
+    type:     annotation
+    prefix:   /api
+
+sbox_user:
+    resource: "@SboxUserBundle/Controller/"
+    type:     annotation
+    prefix:   /api/user
+
+sbox_message:
+    resource: "@SboxMessageBundle/Controller/"
+    type:     annotation
+    prefix:   /api/
+
+NelmioApiDocBundle:
+    resource: "@NelmioApiDocBundle/Resources/config/routing/swaggerui.xml"
+    prefix:   /api/doc

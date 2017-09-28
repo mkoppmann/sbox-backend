@@ -1,0 +1,77 @@
+parameters:
+    sbox_user_specific_entity_encryption.key_pair_class: Sbox\UserSpecificEntityEncryptionBundle\Entity\KeyPair
+
+services:
+    # Class metadata subscribers.
+    sbox_user_specific_entity_encryption.dynamic_user_key_pair_relation_subscriber:
+        class: Sbox\UserSpecificEntityEncryptionBundle\Subscriber\EntityMetadata\DynamicUserKeyPairRelationSubscriber
+        tags: [doctrine.event_subscriber]
+        arguments:
+            - "%sbox_user_specific_entity_encryption.user_class%"
+            - "%sbox_user_specific_entity_encryption.key_pair_class%"
+
+    sbox_user_specific_entity_encryption.dynamic_encryptable_entity_discriminator_subscriber:
+        class: Sbox\UserSpecificEntityEncryptionBundle\Subscriber\EntityMetadata\DynamicEncryptableEntityDiscriminatorSubscriber
+        tags: [doctrine.event_subscriber]
+        arguments:
+            - "%sbox_user_specific_entity_encryption.encryptable_entities%"
+
+    sbox_user_specific_entity_encryption.encrypted_property_type_subscriber:
+            class: Sbox\UserSpecificEntityEncryptionBundle\Subscriber\EntityMetadata\EncryptedPropertyTypeSubscriber
+            tags: [doctrine.event_subscriber]
+            arguments:
+                - "@sbox_user_specific_entity_encryption.encrypted_annotation_helper"
+                - "%sbox_user_specific_entity_encryption.encryptable_entities%"
+
+
+    # Encryption services.
+    sbox_user_specific_entity_encryption.encrypted_annotation_helper:
+        class: Sbox\UserSpecificEntityEncryptionBundle\Service\EncryptedAnnotationHelper
+        arguments:
+            - "@annotation_reader"
+            - "%sbox_user_specific_entity_encryption.encryptable_entities%"
+
+    sbox_user_specific_entity_encryption.encryption_service:
+        class: Sbox\UserSpecificEntityEncryptionBundle\Service\EncryptionService
+        arguments:
+            - "@security.token_storage"
+
+
+    # Encryption/decryption subscribers.
+    sbox_user_specific_entity_encryption.entity_encryption_subscriber:
+        class: Sbox\UserSpecificEntityEncryptionBundle\Subscriber\Encryption\EntityEncryptionSubscriber
+        tags:
+            - { name: doctrine.event_listener, event: prePersist }
+            - { name: doctrine.event_listener, event: preUpdate }
+            - { name: doctrine.event_listener, event: postPersist }
+            - { name: doctrine.event_listener, event: postUpdate }
+        arguments:
+            - "@sbox_user_specific_entity_encryption.encrypted_annotation_helper"
+            - "@sbox_user_specific_entity_encryption.encryption_service"
+            - "%sbox_user_specific_entity_encryption.encryptable_entities%"
+
+    sbox_user_specific_entity_encryption.entity_decryption_subscriber:
+        class: Sbox\UserSpecificEntityEncryptionBundle\Subscriber\Encryption\EntityDecryptionSubscriber
+        tags:
+            - { name: doctrine.event_listener, event: postLoad, priority: 1000 }
+        arguments:
+            - "@sbox_user_specific_entity_encryption.encrypted_annotation_helper"
+            - "@sbox_user_specific_entity_encryption.encryption_service"
+            - "%sbox_user_specific_entity_encryption.encryptable_entities%"
+
+
+    # Key pair-related subscribers.
+    sbox_user_specific_entity_encryption.key_pair_generation_subscriber:
+        class: Sbox\UserSpecificEntityEncryptionBundle\Subscriber\KeyPair\KeyPairGenerationListener
+        tags:
+            - { name: doctrine.event_listener, event: prePersist }
+        arguments:
+            - "%sbox_user_specific_entity_encryption.user_class%"
+
+    sbox_user_specific_entity_encryption.cache_master_secret_in_session_listener:
+        class: Sbox\UserSpecificEntityEncryptionBundle\Subscriber\KeyPair\CacheMasterSecretListener
+        arguments:
+            - "@security.token_storage"
+        tags:
+            - { name: kernel.event_listener, event: security.interactive_login, method: onInteractiveLogin }
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }

@@ -1,0 +1,4 @@
+services:
+  sbox_message.message_manager:
+      class: Sbox\MessageBundle\Manager\MessageManager
+      arguments: [ "@doctrine.orm.entity_manager"]

@@ -1,0 +1,4 @@
+services:
+    sbox_session.handler:
+        class: Sbox\SessionBundle\Session\Handler\DoctrineHandler
+        arguments: ["@doctrine.orm.entity_manager"]
